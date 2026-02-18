@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#0f172a">
+    <title>Ramadan Journey 2026</title>
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3655/3655462.png">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        islamic: {
+                            dark: '#022c22', 
+                            primary: '#047857', 
+                            accent: '#fbbf24', 
+                            light: '#d1fae5', 
+                            glass: 'rgba(2, 44, 34, 0.7)'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                        arabic: ['Amiri', 'serif'],
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'spin-slow': 'spin 12s linear infinite',
+                        'fade-in-up': 'fadeInUp 1s ease-out forwards',
+                        'ping-slow': 'ping 2s cubic-bezier(0, 0, 0.2, 1) infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-20px)' },
+                        },
+                        fadeInUp: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #0f172a;
+            background-image: 
+                linear-gradient(rgba(2, 44, 34, 0.85), rgba(15, 23, 42, 0.95)),
+                url('https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80');
+            background-size: cover;
+            background-attachment: fixed;
+            background-position: center;
+            color: #f8fafc;
+            font-family: 'Outfit', sans-serif;
+            overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none; /* App feel */
+        }
+
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        .active-prayer {
+            border: 2px solid #fbbf24;
+            background: rgba(4, 120, 87, 0.4);
+            transform: scale(1.02);
+            box-shadow: 0 0 15px rgba(251, 191, 36, 0.3);
+        }
+
+        .passed-prayer {
+            opacity: 0.5;
+            border-left: 2px solid #64748b;
+        }
+
+        .gold-text {
+            background: linear-gradient(to right, #fbbf24, #f59e0b);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-item.active {
+            color: #fbbf24;
+            border-top: 2px solid #fbbf24;
+        }
+
+        .custom-checkbox input:checked + div {
+            background-color: #047857;
+            border-color: #fbbf24;
+        }
+        
+        .accordion-content {
+            transition: max-height 0.3s ease-out, opacity 0.3s ease-out;
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+        }
+        .accordion-content.active {
+            max-height: 500px;
+            opacity: 1;
+        }
+
+        #intro-overlay { 
+            z-index: 9999;
+            transition: opacity 0.8s ease-in-out;
+        }
+        
+        #alarm-overlay {
+            z-index: 10000;
+        }
+
+        .moon-float {
+            animation: float 4s ease-in-out infinite;
+        }
+
+        input[type="time"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+            cursor: pointer;
+        }
+        
+        /* Toggle Switch */
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #10B981;
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #10B981;
+        }
+
+        /* Screen Awake Button Pulse */
+        .awake-active {
+            box-shadow: 0 0 15px #10B981;
+            border-color: #10B981;
+        }
+
+        /* Custom Scrollbar for Table */
+        .table-container::-webkit-scrollbar {
+            height: 6px;
+        }
+        .table-container::-webkit-scrollbar-thumb {
+            background: #047857;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+    </style>
+</head>
+<body class="min-h-screen pb-24 relative">
+
+    <!-- AUDIO ELEMENTS -->
+    <audio id="audio-azan" src="https://www.islamcan.com/audio/adhan/azan1.mp3" preload="none"></audio>
+    <audio id="audio-sehri" src="https://assets.mixkit.co/active_storage/sfx/933/933-preview.mp3" preload="none"></audio>
+
+    <!-- ALARM RINGING OVERLAY -->
+    <div id="alarm-overlay" class="hidden fixed inset-0 flex flex-col items-center justify-center bg-black/90 backdrop-blur-md pointer-events-auto">
+        <div class="relative mb-8">
+            <div class="absolute inset-0 bg-yellow-500 rounded-full animate-ping-slow opacity-30"></div>
+            <div class="relative w-24 h-24 bg-gradient-to-tr from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center shadow-2xl border-4 border-[#0f172a]">
+                <i data-lucide="bell-ring" class="w-10 h-10 text-slate-900 animate-bounce"></i>
+            </div>
+        </div>
+        
+        <h2 class="text-3xl font-bold text-white mb-2" id="alarm-title">Prayer Time</h2>
+        <p class="text-emerald-300 text-lg mb-10 tracking-widest uppercase" id="alarm-subtitle">Azan is playing...</p>
+        
+        <button onclick="stopAlarm()" class="px-10 py-4 bg-red-600 hover:bg-red-500 text-white rounded-full font-bold text-lg shadow-lg shadow-red-600/40 transition transform active:scale-95 flex items-center gap-3">
+            <i data-lucide="octagon-pause" class="w-6 h-6"></i> Stop Alarm
+        </button>
+    </div>
+
+    <!-- INTRO ANIMATION OVERLAY -->
+    <div id="intro-overlay" class="fixed inset-0 bg-[#022c22] flex flex-col items-center justify-center pointer-events-auto p-4">
+        <div class="w-full flex justify-center mb-8">
+            <img src="https://media.tenor.com/pbuMcxSidIsAAAAm/ramadan-mubarak.webp" class="w-full max-w-[280px] h-auto moon-float opacity-90 drop-shadow-[0_0_20px_rgba(251,191,36,0.4)] rounded-2xl" alt="Ramadan Mubarak">
+        </div>
+        
+        <div class="text-center animate-fade-in-up mb-12">
+            <h1 class="text-5xl font-arabic text-yellow-400 mb-2 drop-shadow-[0_0_15px_rgba(250,204,21,0.5)]">Ramadan Mubarak</h1>
+            <p class="text-emerald-200 text-lg font-light tracking-[0.3em] uppercase">Journey to Light</p>
+        </div>
+        
+        <div>
+            <button onclick="startApp()" class="px-8 py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-full font-bold transition shadow-lg shadow-emerald-500/30 active:scale-95">
+                Enter Journey
+            </button>
+        </div>
+    </div>
+
+    <!-- Background Elements -->
+    <div class="fixed top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
+        <div class="absolute top-10 right-10 w-32 h-32 bg-yellow-400 rounded-full blur-[100px] opacity-20"></div>
+    </div>
+
+    <!-- HEADER -->
+    <header class="p-6 flex justify-between items-center sticky top-0 z-40 glass-panel border-b-0 border-b-slate-800/50">
+        <div>
+            <h1 class="text-xl font-bold tracking-wide">RAMADAN <span class="gold-text">2026</span></h1>
+            <p class="text-xs text-slate-400 flex items-center gap-1">
+                <i data-lucide="map-pin" class="w-3 h-3"></i> <span id="location-text">Bangalore, India</span>
+            </p>
+        </div>
+        <button onclick="switchView('alarm')" class="w-10 h-10 rounded-full bg-emerald-900/50 flex items-center justify-center border border-emerald-700/30 shadow-lg shadow-emerald-900/20 hover:bg-emerald-800/50 transition">
+            <i data-lucide="bell" class="w-5 h-5 text-yellow-400"></i>
+        </button>
+    </header>
+
+    <!-- MAIN CONTENT AREA -->
+    <main id="main-content" class="p-4 max-w-2xl mx-auto space-y-6">
+        
+        <!-- SECTION: DASHBOARD -->
+        <div id="view-dashboard" class="animate-fade-in">
+            <div class="glass-panel rounded-2xl p-6 relative overflow-hidden group">
+                <div class="absolute -right-10 -top-10 w-40 h-40 bg-emerald-600 rounded-full blur-3xl opacity-20 group-hover:opacity-30 transition"></div>
+                <div class="text-center relative z-10">
+                    <p class="text-emerald-300 text-xs font-medium tracking-widest uppercase mb-1" id="next-label">Upcoming Prayer</p>
+                    <h2 class="text-3xl font-bold text-white mb-1" id="next-prayer-name">--:--</h2>
+                    <p class="text-slate-400 text-xs mb-3" id="next-prayer-time">Update times in Alarm Tab</p>
+                    <div class="text-5xl font-mono font-bold gold-text tracking-tighter my-4" id="countdown-timer">00:00:00</div>
+                    <p class="text-slate-400 text-sm">Sehri Ends: <span class="text-white font-semibold" id="disp-sehri-end">--:-- AM</span></p>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-between px-2 py-2">
+                <div>
+                    <h3 class="text-xl font-bold text-white" id="current-day">--</h3>
+                    <p class="text-slate-400 text-sm" id="current-date">--</p>
+                </div>
+                <div class="text-right">
+                    <h3 class="text-xl font-bold text-emerald-400">Chaand Raat</h3>
+                    <p class="text-slate-500 text-xs">Waiting for Moon</p>
+                </div>
+            </div>
+
+            <div class="mt-8">
+                <h3 class="font-semibold text-lg text-emerald-100 mb-3 px-1">Today's Prayers</h3>
+                <div class="grid grid-cols-3 gap-3">
+                    <div id="card-fajr" class="glass-panel p-3 rounded-xl text-center border-l-2 border-l-slate-700 transition-all duration-300">
+                        <p class="text-xs text-slate-400">Fajr</p>
+                        <p class="font-bold text-white" id="time-fajr">--:--</p>
+                    </div>
+                    <div id="card-dhuhr" class="glass-panel p-3 rounded-xl text-center border-l-2 border-l-slate-700 transition-all duration-300">
+                        <p class="text-xs text-slate-400">Dhuhr</p>
+                        <p class="font-bold text-white" id="time-dhuhr">--:--</p>
+                    </div>
+                    <div id="card-asr" class="glass-panel p-3 rounded-xl text-center border-l-2 border-l-slate-700 transition-all duration-300">
+                        <p class="text-xs text-slate-400">Asr</p>
+                        <p class="font-bold text-white" id="time-asr">--:--</p>
+                    </div>
+                    <div id="card-maghrib" class="glass-panel p-3 rounded-xl text-center border-l-2 border-l-slate-700 transition-all duration-300">
+                        <p class="text-xs text-slate-400">Maghrib</p>
+                        <p class="font-bold text-white" id="time-maghrib">--:--</p>
+                    </div>
+                    <div id="card-isha" class="glass-panel p-3 rounded-xl text-center border-l-2 border-l-slate-700 transition-all duration-300">
+                        <p class="text-xs text-slate-400">Isha</p>
+                        <p class="font-bold text-white" id="time-isha">--:--</p>
+                    </div>
+                    <div class="glass-panel p-3 rounded-xl text-center bg-emerald-900/30 border-l-2 border-l-emerald-500">
+                        <p class="text-xs text-emerald-400">Taraweeh</p>
+                        <p class="font-bold text-white" id="time-taraweeh">09:15 PM</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-6">
+                <div class="flex justify-between items-center mb-3 px-1">
+                    <h3 class="font-semibold text-lg text-emerald-100">Daily Tracker</h3>
+                    <span class="text-xs bg-emerald-900 text-emerald-300 px-2 py-1 rounded-full border border-emerald-700/50" id="progress-text">0/8 Done</span>
+                </div>
+                <div class="space-y-3" id="checklist-container"></div>
+            </div>
+        </div>
+
+        <!-- OTHER SECTIONS HIDDEN -->
+        <div id="view-duas" class="hidden animate-fade-in pb-20">
+            <h2 class="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+                <i data-lucide="book-heart" class="w-6 h-6 text-emerald-400"></i> Dua Library
+            </h2>
+            <div class="space-y-4" id="dua-container"></div>
+        </div>
+
+        <div id="view-planner" class="hidden animate-fade-in pb-20">
+            <h2 class="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+                <i data-lucide="calendar-check" class="w-6 h-6 text-yellow-400"></i> 30 Day Plan
+            </h2>
+            
+            <!-- RAMADAN TIMETABLE CHART -->
+            <div class="glass-panel p-4 mb-6 rounded-2xl border border-emerald-500/30">
+                <h3 class="text-lg font-bold text-emerald-100 mb-3 flex items-center gap-2">
+                    <i data-lucide="table" class="w-5 h-5 text-yellow-400"></i> Ramadan Timetable
+                </h3>
+                <p class="text-xs text-slate-400 mb-3">Bangalore, India • Sehri (Fajr) & Iftar (Maghrib)</p>
+                <div class="overflow-x-auto table-container">
+                    <table class="w-full text-left text-sm whitespace-nowrap">
+                        <thead class="text-xs text-emerald-300 uppercase bg-slate-800/50">
+                            <tr>
+                                <th class="px-4 py-3 rounded-tl-lg">Date</th>
+                                <th class="px-4 py-3">Sehri End</th>
+                                <th class="px-4 py-3 rounded-tr-lg">Iftar Time</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-slate-200" id="timetable-body">
+                            <!-- JS Generated -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 gap-3" id="planner-container"></div>
+        </div>
+
+        <div id="view-tools" class="hidden animate-fade-in pb-20">
+            <h2 class="text-2xl font-bold text-white mb-4">Tools</h2>
+            <div class="glass-panel p-6 rounded-2xl text-center mb-6">
+                <div class="flex justify-between items-center mb-4">
+                     <p class="text-sm text-slate-400 uppercase tracking-widest">Tasbeeh</p>
+                     <button onclick="resetTasbeeh()" class="p-2 hover:bg-slate-700 rounded-full text-slate-400"><i data-lucide="rotate-ccw" class="w-4 h-4"></i></button>
+                </div>
+                <div class="text-7xl font-bold gold-text mb-6 font-mono" id="tasbeeh-count">0</div>
+                <button onclick="incrementTasbeeh()" class="w-20 h-20 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-700 text-white shadow-xl shadow-emerald-600/30 transition active:scale-90 flex items-center justify-center mx-auto border-4 border-slate-800">
+                    <i data-lucide="plus" class="w-10 h-10"></i>
+                </button>
+            </div>
+            <div class="glass-panel p-5 rounded-2xl">
+                <h3 class="text-lg font-bold text-emerald-100 mb-4 flex items-center gap-2">
+                    <i data-lucide="calculator" class="w-5 h-5 text-yellow-400"></i> Zakat Calculator
+                </h3>
+                <div class="space-y-3">
+                    <div>
+                        <label class="text-xs text-slate-400 block mb-1">Cash & Bank Balance (INR)</label>
+                        <input type="number" id="zakat-cash" placeholder="50000" class="w-full bg-slate-800/50 border border-slate-700 rounded-lg p-3 text-white">
+                    </div>
+                    <button onclick="calculateZakat()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-lg mt-2 transition">Calculate 2.5%</button>
+                    <div id="zakat-result" class="hidden mt-4 p-4 bg-emerald-900/40 border border-emerald-700/50 rounded-xl text-center">
+                        <p class="text-xs text-slate-300">Your Zakat Payable</p>
+                        <p class="text-2xl font-bold gold-text mt-1">₹ <span id="zakat-amount">0</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION: ALARM & SETTINGS -->
+        <div id="view-alarm" class="hidden animate-fade-in pb-20">
+            <h2 class="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+                <i data-lucide="alarm-clock" class="w-6 h-6 text-yellow-400"></i> Alarm Clock
+            </h2>
+            
+            <div class="glass-panel p-6 rounded-2xl mb-6 text-center bg-slate-900/50">
+                <p class="text-xs text-emerald-400 font-medium tracking-widest uppercase mb-2">Current Time</p>
+                <div class="text-6xl font-mono font-bold text-white drop-shadow-lg" id="real-time-clock">--:--:--</div>
+                <p class="text-sm text-slate-400 mt-2" id="real-time-date">--</p>
+            </div>
+
+            <!-- Wake Lock / Keep Screen On Button -->
+            <button onclick="toggleWakeLock()" id="wake-lock-btn" class="w-full mb-6 p-4 rounded-xl border border-slate-600 bg-slate-800/50 text-slate-300 flex items-center justify-center gap-2 transition-all active:scale-95">
+                <i data-lucide="sun" class="w-5 h-5"></i> <span>Enable "Keep Screen On" (For Night)</span>
+            </button>
+            
+            <div class="glass-panel p-5 rounded-2xl mb-6 border border-emerald-500/30">
+                <div class="flex justify-between items-center mb-4">
+                    <p class="text-xs text-slate-400">Auto Azan & Alarm</p>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs text-white font-bold" id="mute-status-text">Alarms ON</span>
+                        <div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+                            <input type="checkbox" name="toggle" id="mute-toggle" onchange="toggleMute()" class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer border-gray-300 left-0 transition-all duration-300" checked/>
+                            <label for="mute-toggle" class="toggle-label block overflow-hidden h-5 rounded-full bg-gray-300 cursor-pointer"></label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="text-xs text-slate-400 block mb-1">Your Location</label>
+                        <input type="text" id="input-location" onchange="saveSettings()" class="w-full bg-slate-800/50 border border-slate-700 rounded-lg p-3 text-white text-sm focus:border-emerald-500 outline-none" placeholder="e.g. Mirpur, Dhaka">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="bg-slate-800/30 p-2 rounded-lg border border-slate-700/50">
+                            <label class="text-xs text-slate-400 block mb-1">Fajr</label>
+                            <input type="time" id="input-fajr" onchange="saveSettings()" class="w-full bg-transparent text-white font-bold outline-none">
+                        </div>
+                        <div class="bg-slate-800/30 p-2 rounded-lg border border-slate-700/50">
+                            <label class="text-xs text-slate-400 block mb-1">Dhuhr</label>
+                            <input type="time" id="input-dhuhr" onchange="saveSettings()" class="w-full bg-transparent text-white font-bold outline-none">
+                        </div>
+                        <div class="bg-slate-800/30 p-2 rounded-lg border border-slate-700/50">
+                            <label class="text-xs text-slate-400 block mb-1">Asr</label>
+                            <input type="time" id="input-asr" onchange="saveSettings()" class="w-full bg-transparent text-white font-bold outline-none">
+                        </div>
+                        <div class="bg-slate-800/30 p-2 rounded-lg border border-slate-700/50">
+                            <label class="text-xs text-slate-400 block mb-1">Maghrib</label>
+                            <input type="time" id="input-maghrib" onchange="saveSettings()" class="w-full bg-transparent text-white font-bold outline-none">
+                        </div>
+                        <div class="bg-slate-800/30 p-2 rounded-lg border border-slate-700/50">
+                            <label class="text-xs text-slate-400 block mb-1">Isha</label>
+                            <input type="time" id="input-isha" onchange="saveSettings()" class="w-full bg-transparent text-white font-bold outline-none">
+                        </div>
+                        <div class="bg-emerald-900/30 p-2 rounded-lg border border-yellow-500/50">
+                            <label class="text-xs text-yellow-400 block mb-1 font-bold">Sehri End</label>
+                            <input type="time" id="input-sehri" onchange="saveSettings()" class="w-full bg-transparent text-white font-bold outline-none">
+                        </div>
+                    </div>
+
+                    <div class="pt-4 border-t border-slate-700/50">
+                        <label class="text-xs text-slate-400 block mb-2 flex items-center gap-2">
+                            <i data-lucide="music" class="w-3 h-3"></i> Custom Alarm Tone
+                        </label>
+                        <input type="file" id="custom-tone-upload" accept="audio/*" onchange="handleAudioUpload(this)" class="block w-full text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-emerald-600 file:text-white hover:file:bg-emerald-700"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <nav class="fixed bottom-0 left-0 w-full glass-panel border-t border-slate-700/50 pb-safe pt-2 px-2 z-50">
+        <div class="flex justify-around items-center max-w-2xl mx-auto h-16">
+            <button onclick="switchView('dashboard')" class="nav-item active flex flex-col items-center justify-center w-full h-full text-slate-400 hover:text-emerald-300 transition-colors">
+                <i data-lucide="home" class="w-5 h-5 mb-1"></i>
+                <span class="text-[10px] font-medium">Home</span>
+            </button>
+            <button onclick="switchView('duas')" class="nav-item flex flex-col items-center justify-center w-full h-full text-slate-400 hover:text-emerald-300 transition-colors">
+                <i data-lucide="book-open" class="w-5 h-5 mb-1"></i>
+                <span class="text-[10px] font-medium">Duas</span>
+            </button>
+            <button onclick="switchView('tools')" class="relative -top-5 w-14 h-14 rounded-full bg-gradient-to-tr from-yellow-400 to-yellow-600 flex items-center justify-center text-slate-900 shadow-lg shadow-yellow-500/30 transform transition hover:scale-105 active:scale-95 border-4 border-[#0f172a]">
+                <i data-lucide="layout-grid" class="w-6 h-6"></i>
+            </button>
+            <button onclick="switchView('planner')" class="nav-item flex flex-col items-center justify-center w-full h-full text-slate-400 hover:text-emerald-300 transition-colors">
+                <i data-lucide="calendar-days" class="w-5 h-5 mb-1"></i>
+                <span class="text-[10px] font-medium">Plan</span>
+            </button>
+            <button onclick="switchView('alarm')" class="nav-item flex flex-col items-center justify-center w-full h-full text-slate-400 hover:text-emerald-300 transition-colors">
+                <i data-lucide="alarm-clock" class="w-5 h-5 mb-1"></i>
+                <span class="text-[10px] font-medium">Alarm</span>
+            </button>
+        </div>
+    </nav>
+
+    <script>
+        // UPDATED DEFAULT SETTINGS AS PER USER REQUEST
+        let userSettings = {
+            location: "Bangalore, India",
+            alarmsEnabled: true,
+            times: {
+                fajr: "05:40",
+                dhuhr: "13:15",
+                asr: "17:15",
+                maghrib: "18:35",
+                isha: "20:15",
+                sehri: "05:24"
+            }
+        };
+        let playedAlarms = {}; 
+        let wakeLock = null;
+
+        // TIMETABLE DATA - UPDATED IFTAR TO 12H (06:xx PM)
+        const ramadanTimetable = [
+            {date: "18 Feb", fajr: "05:29", maghrib: "06:26"},
+            {date: "19 Feb", fajr: "05:29", maghrib: "06:26"},
+            {date: "20 Feb", fajr: "05:29", maghrib: "06:27"},
+            {date: "21 Feb", fajr: "05:28", maghrib: "06:27"},
+            {date: "22 Feb", fajr: "05:28", maghrib: "06:27"},
+            {date: "23 Feb", fajr: "05:28", maghrib: "06:27"},
+            {date: "24 Feb", fajr: "05:27", maghrib: "06:28"},
+            {date: "25 Feb", fajr: "05:27", maghrib: "06:28"},
+            {date: "26 Feb", fajr: "05:26", maghrib: "06:28"},
+            {date: "27 Feb", fajr: "05:26", maghrib: "06:28"},
+            {date: "28 Feb", fajr: "05:25", maghrib: "06:28"},
+            {date: "01 Mar", fajr: "05:25", maghrib: "06:28"},
+            {date: "02 Mar", fajr: "05:24", maghrib: "06:29"},
+            {date: "03 Mar", fajr: "05:24", maghrib: "06:29"},
+            {date: "04 Mar", fajr: "05:23", maghrib: "06:29"},
+            {date: "05 Mar", fajr: "05:23", maghrib: "06:29"},
+            {date: "06 Mar", fajr: "05:22", maghrib: "06:29"},
+            {date: "07 Mar", fajr: "05:22", maghrib: "06:29"},
+            {date: "08 Mar", fajr: "05:21", maghrib: "06:29"},
+            {date: "09 Mar", fajr: "05:20", maghrib: "06:29"},
+            {date: "10 Mar", fajr: "05:20", maghrib: "06:30"},
+            {date: "11 Mar", fajr: "05:19", maghrib: "06:30"},
+            {date: "12 Mar", fajr: "05:19", maghrib: "06:30"},
+            {date: "13 Mar", fajr: "05:18", maghrib: "06:30"},
+            {date: "14 Mar", fajr: "05:17", maghrib: "06:30"},
+            {date: "15 Mar", fajr: "05:17", maghrib: "06:30"},
+            {date: "16 Mar", fajr: "05:16", maghrib: "06:30"},
+            {date: "17 Mar", fajr: "05:15", maghrib: "06:30"},
+            {date: "18 Mar", fajr: "05:15", maghrib: "06:30"},
+            {date: "19 Mar", fajr: "05:14", maghrib: "06:30"}
+        ];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadSettings();
+            lucide.createIcons();
+            renderChecklist();
+            loadTasbeeh();
+            renderDuas();
+            renderPlanner();
+            renderTimetable();
+            updateTimeTracker();
+            setInterval(updateTimeTracker, 1000);
+            updateRealTimeClock();
+            setInterval(updateRealTimeClock, 1000);
+        });
+
+        function startApp() {
+            const overlay = document.getElementById('intro-overlay');
+            overlay.style.opacity = '0';
+            overlay.style.pointerEvents = 'none'; 
+            try {
+                const azan = document.getElementById('audio-azan');
+                azan.volume = 0;
+                azan.load(); 
+            } catch(e) { console.log("Audio init skipped"); }
+            setTimeout(() => { overlay.style.display = 'none'; }, 800);
+        }
+
+        // --- WAKE LOCK API ---
+        async function toggleWakeLock() {
+            const btn = document.getElementById('wake-lock-btn');
+            if ('wakeLock' in navigator) {
+                if (wakeLock === null) {
+                    try {
+                        wakeLock = await navigator.wakeLock.request('screen');
+                        btn.classList.add('awake-active', 'text-emerald-400', 'bg-slate-800');
+                        btn.innerHTML = `<i data-lucide="sun" class="w-5 h-5"></i> <span>Screen Kept Awake (Active)</span>`;
+                        lucide.createIcons();
+                        wakeLock.addEventListener('release', () => {
+                            wakeLock = null;
+                            resetWakeLockUI();
+                        });
+                    } catch (err) {
+                        alert("Could not enable screen lock: " + err.name);
+                    }
+                } else {
+                    wakeLock.release();
+                    wakeLock = null;
+                    resetWakeLockUI();
+                }
+            } else {
+                alert("Your browser does not support keeping the screen awake.");
+            }
+        }
+
+        function resetWakeLockUI() {
+            const btn = document.getElementById('wake-lock-btn');
+            btn.classList.remove('awake-active', 'text-emerald-400', 'bg-slate-800');
+            btn.innerHTML = `<i data-lucide="sun" class="w-5 h-5"></i> <span>Enable "Keep Screen On" (For Night)</span>`;
+            lucide.createIcons();
+        }
+
+        function updateRealTimeClock() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('en-US', { hour12: false });
+            const dateString = now.toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+            const clockEl = document.getElementById('real-time-clock');
+            if(clockEl) clockEl.innerText = timeString;
+            const dateEl = document.getElementById('real-time-date');
+            if(dateEl) dateEl.innerText = dateString;
+        }
+
+        function loadSettings() {
+            const saved = localStorage.getItem('ramadan_settings_2026');
+            if(saved) {
+                try {
+                    const parsed = JSON.parse(saved);
+                    userSettings = { ...userSettings, ...parsed };
+                } catch(e) {}
+            }
+            const locInput = document.getElementById('input-location');
+            if(locInput) locInput.value = userSettings.location;
+            const locText = document.getElementById('location-text');
+            if(locText) locText.innerText = userSettings.location;
+            const muteToggle = document.getElementById('mute-toggle');
+            if(muteToggle) {
+                muteToggle.checked = userSettings.alarmsEnabled;
+                updateMuteText();
+            }
+            for (const [key, val] of Object.entries(userSettings.times)) {
+                if(document.getElementById(`input-${key}`)) {
+                    document.getElementById(`input-${key}`).value = val;
+                    if(document.getElementById(`time-${key}`)) {
+                        document.getElementById(`time-${key}`).innerText = formatTime12(val);
+                    }
+                }
+            }
+            if(document.getElementById('disp-sehri-end')) {
+                document.getElementById('disp-sehri-end').innerText = formatTime12(userSettings.times.sehri);
+            }
+        }
+
+        function saveSettings() {
+            const locInput = document.getElementById('input-location');
+            userSettings.location = locInput.value || "Bangalore, India";
+            document.getElementById('location-text').innerText = userSettings.location;
+            const prayers = ['fajr', 'dhuhr', 'asr', 'maghrib', 'isha', 'sehri'];
+            prayers.forEach(p => {
+                const input = document.getElementById(`input-${p}`);
+                if(input && input.value) userSettings.times[p] = input.value;
+            });
+            localStorage.setItem('ramadan_settings_2026', JSON.stringify(userSettings));
+            loadSettings(); 
+            playedAlarms = {};
+        }
+
+        function toggleMute() {
+            const toggle = document.getElementById('mute-toggle');
+            userSettings.alarmsEnabled = toggle.checked;
+            updateMuteText();
+            saveSettings();
+        }
+
+        function updateMuteText() {
+            const text = document.getElementById('mute-status-text');
+            if(userSettings.alarmsEnabled) {
+                text.innerText = "Alarms ON";
+                text.classList.remove('text-red-400');
+            } else {
+                text.innerText = "Alarms MUTED";
+                text.classList.add('text-red-400');
+            }
+        }
+
+        function handleAudioUpload(input) {
+            if (input.files && input.files[0]) {
+                const url = URL.createObjectURL(input.files[0]);
+                document.getElementById('audio-sehri').src = url;
+                alert("Custom alarm tone set! (Reset on page reload)");
+            }
+        }
+
+        function formatTime12(time24) {
+            if(!time24) return "--:--";
+            const [h, m] = time24.split(':');
+            const hour = parseInt(h);
+            const suffix = hour >= 12 ? 'PM' : 'AM';
+            const hour12 = hour % 12 || 12;
+            return `${hour12}:${m} ${suffix}`;
+        }
+
+        function checkAlarms(now) {
+            if(!userSettings.alarmsEnabled) return;
+            const currentHM = `${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
+            const currentSeconds = now.getSeconds();
+            const azanPrayers = ['fajr', 'dhuhr', 'asr', 'maghrib', 'isha'];
+            azanPrayers.forEach(p => {
+                if (userSettings.times[p] === currentHM && !playedAlarms[p] && currentSeconds < 5) {
+                    playAzan(p);
+                    playedAlarms[p] = true;
+                }
+            });
+            if (userSettings.times.sehri === currentHM && !playedAlarms['sehri'] && currentSeconds < 5) {
+                playSehriAlarm();
+                playedAlarms['sehri'] = true;
+            }
+        }
+
+        function playAzan(prayerName) {
+            const overlay = document.getElementById('alarm-overlay');
+            document.getElementById('alarm-title').innerText = prayerName.toUpperCase() + " Time";
+            document.getElementById('alarm-subtitle').innerText = "Azan is playing...";
+            overlay.classList.remove('hidden');
+            const audio = document.getElementById('audio-azan');
+            audio.volume = 1; 
+            audio.currentTime = 0;
+            audio.play().catch(e => console.log("Audio play failed:", e));
+        }
+
+        function playSehriAlarm() {
+            const overlay = document.getElementById('alarm-overlay');
+            document.getElementById('alarm-title').innerText = "SEHRI TIME";
+            document.getElementById('alarm-subtitle').innerText = "Wake up for Sehri!";
+            overlay.classList.remove('hidden');
+            const audio = document.getElementById('audio-sehri');
+            audio.volume = 1;
+            audio.currentTime = 0;
+            audio.play().catch(e => console.log("Audio play failed:", e));
+        }
+
+        function stopAlarm() {
+            const azan = document.getElementById('audio-azan');
+            const sehri = document.getElementById('audio-sehri');
+            azan.pause();
+            azan.currentTime = 0;
+            sehri.pause();
+            sehri.currentTime = 0;
+            document.getElementById('alarm-overlay').classList.add('hidden');
+        }
+
+        function getNextPrayer() {
+            const now = new Date();
+            const currentVal = now.getHours() * 60 + now.getMinutes();
+            const prayers = [
+                { id: 'fajr', name: 'Fajr', time: userSettings.times.fajr },
+                { id: 'dhuhr', name: 'Dhuhr', time: userSettings.times.dhuhr },
+                { id: 'asr', name: 'Asr', time: userSettings.times.asr },
+                { id: 'maghrib', name: 'Maghrib', time: userSettings.times.maghrib },
+                { id: 'isha', name: 'Isha', time: userSettings.times.isha }
+            ];
+            let nextPrayer = null;
+            for (let p of prayers) {
+                const [pH, pM] = p.time.split(':').map(Number);
+                const pVal = pH * 60 + pM;
+                if (currentVal < pVal) {
+                    nextPrayer = p;
+                    break;
+                }
+            }
+            if (!nextPrayer) {
+                nextPrayer = { ...prayers[0], isTomorrow: true };
+            }
+            return nextPrayer;
+        }
+
+        function updateTimeTracker() {
+            const now = new Date();
+            checkAlarms(now);
+            const nextP = getNextPrayer();
+            const nameEl = document.getElementById('next-prayer-name');
+            if(nameEl) nameEl.innerText = nextP.name;
+            const timeEl = document.getElementById('next-prayer-time');
+            if(timeEl) timeEl.innerText = nextP.isTomorrow ? `Tomorrow ${formatTime12(nextP.time)}` : `Today ${formatTime12(nextP.time)}`;
+            const prayers = ['fajr', 'dhuhr', 'asr', 'maghrib', 'isha'];
+            prayers.forEach(p => {
+                const card = document.getElementById(`card-${p}`);
+                if(card) {
+                    card.classList.remove('active-prayer', 'passed-prayer');
+                    const [pH, pM] = userSettings.times[p].split(':').map(Number);
+                    const pVal = pH * 60 + pM;
+                    const currentVal = now.getHours() * 60 + now.getMinutes();
+                    if (currentVal > pVal) card.classList.add('passed-prayer');
+                    if (p === nextP.id && !nextP.isTomorrow) card.classList.add('active-prayer');
+                }
+            });
+            const [targetH, targetM] = nextP.time.split(':').map(Number);
+            const targetDate = new Date();
+            targetDate.setHours(targetH, targetM, 0);
+            if(nextP.isTomorrow) targetDate.setDate(targetDate.getDate() + 1);
+            const diff = targetDate - now;
+            if(diff > 0) {
+                const h = Math.floor((diff / (1000 * 60 * 60)) % 24);
+                const m = Math.floor((diff / (1000 * 60)) % 60);
+                const s = Math.floor((diff / 1000) % 60);
+                document.getElementById('countdown-timer').innerText = 
+                    `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+            }
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            const dateEl = document.getElementById('current-date');
+            if(dateEl) dateEl.innerText = now.toLocaleDateString('en-US', options);
+            const dayEl = document.getElementById('current-day');
+            if(dayEl) dayEl.innerText = now.toLocaleDateString('en-US', { weekday: 'long' });
+        }
+
+        function renderTimetable() {
+            const tbody = document.getElementById('timetable-body');
+            let html = '';
+            ramadanTimetable.forEach(row => {
+                html += `
+                    <tr class="border-b border-slate-700/50 hover:bg-slate-800/30 transition">
+                        <td class="px-4 py-3 font-medium text-emerald-400">${row.date}</td>
+                        <td class="px-4 py-3 font-bold text-white">${row.fajr} AM</td>
+                        <td class="px-4 py-3 font-bold text-yellow-400">${row.maghrib} PM</td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = html;
+        }
+
+        const duaCollection = [
+            { category: "Roza (Fasting)", items: [ { title: "Sehri Niyyat", arabic: "نَوَيْتُ اَنْ اُصُوْمَ غَدًا مِّنْ شَهْرِ رَمَضَانَ الْمُبَارَكِ فَرْضًا لَكَ يَا اللهُ فَتَقَبَّل مني إِنَّكَ أَنْتَ السَّمِيعُ الْعَلِيم", pronunciation: "Nawaitu an asuma ghadan min shahri Ramadan...", meaning: "Ya Allah! Main kal ke mubarak Ramadan ke roze ki niyat karta hoon. Mere taraf se ise qabool farma, Mere Maula." }, { title: "Iftar Dua", arabic: "اللَّهُمَّ لَكَ صُمْتُ وَعَلَى رِزْقِكَ أَفْطَرْتُ", pronunciation: "Allahumma laka sumtu wa 'ala rizqika aftartu", meaning: "Aye Allah! Maine Tere liye hi roza rakha, aur Tere hi diye hue rizq se iftar kiya." } ] },
+            { category: "Ashra Duas", items: [ { title: "1st Ashra (Rahmat)", arabic: "رَبِّ اغْفِرْ وَارْحَمْ وَأَنْتَ خَيْرُ الرَّاحِمِينَ", pronunciation: "Rabbighfir warham wa anta khairur rahimin", meaning: "Aye mere Rab! Mujhe baksh de aur mujh par reham farma, Tu hi sabse behtar reham karne wala hai." }, { title: "2nd Ashra (Magfirat)", arabic: "أَسْتَغْفِرُ اللهَ رَبِّي مِنْ كُلِّ ذَنْبٍ وَأَتُوبُ إِلَيْهِ", pronunciation: "Astaghfirullaha rabbi min kulli zanbin wa atubu ilaih", meaning: "Main Allah se apne tamaam gunahon ki maafi maangta hoon jo mera Rab hai, aur usi ki taraf laut ta hoon." }, { title: "3rd Ashra (Najat)", arabic: "اللَّهُمَّ أَجِرْنِي مِنَ النَّارِ", pronunciation: "Allahumma ajirni minan nar", meaning: "Aye Allah! Mujhe dozakh ki aag se mahfooz rakh." } ] }
+        ];
+        const ramadanPlan = [ { day: 1, title: "Purify Intention", task: "Make pure Niyyah for the whole month. Read Surah Al-Fatiha with meaning." }, { day: 2, title: "Control Anger", task: "Avoid arguments completely today. Say 'I am fasting' if provoked." }, { day: 3, title: "Small Charity", task: "Give a small amount to someone in need or feed a stray animal." }, { day: 4, title: "Phone Detox", task: "Reduce social media usage. Replace scroll time with Istighfar." }, { day: 5, title: "Connect with Quran", task: "Read at least 2 pages of Quran after Fajr." }, { day: 6, title: "Call a Relative", task: "Strengthen kinship. Call someone you haven't spoken to in a while." }, { day: 7, title: "Make Dua for Ummah", task: "Spend 5 minutes making dua for suffering Muslims worldwide." }, { day: 8, title: "Feed a Fasting Person", task: "Share your Iftar with neighbors or a needy person." }, { day: 9, title: "Sunnah of Smile", task: "Smile at everyone you meet today. It's Sadaqah." }, { day: 10, title: "Seek Forgiveness", task: "Recite 'Astaghfirullah' 100 times. End of 1st Ashra." } ];
+        const checklistItems = [ { id: 'fajr', label: 'Fajr Prayer', icon: 'sunrise' }, { id: 'quran', label: 'Read Quran (1 Juz)', icon: 'book' }, { id: 'dhuhr', label: 'Dhuhr Prayer', icon: 'sun' }, { id: 'asr', label: 'Asr Prayer', icon: 'cloud-sun' }, { id: 'maghrib', label: 'Maghrib Prayer', icon: 'sunset' }, { id: 'isha', label: 'Isha Prayer', icon: 'moon' }, { id: 'taraweeh', label: 'Taraweeh (20/8)', icon: 'users' }, { id: 'tahajjud', label: 'Tahajjud / Sehri', icon: 'moon-star' } ];
+
+        function renderDuas() {
+            const container = document.getElementById('dua-container');
+            let html = '';
+            duaCollection.forEach((cat, idx) => {
+                html += `<div class="mb-4"><h3 class="text-emerald-300 font-bold mb-2 uppercase text-xs tracking-wider">${cat.category}</h3><div class="space-y-2">`;
+                cat.items.forEach((dua, dIdx) => {
+                    const uniqueId = `dua-${idx}-${dIdx}`;
+                    html += `<div class="glass-panel rounded-xl overflow-hidden border border-slate-700/50"><button onclick="toggleAccordion('${uniqueId}')" class="w-full p-4 flex justify-between items-center text-left hover:bg-slate-800/30 transition"><span class="font-bold text-white">${dua.title}</span><i data-lucide="chevron-down" class="w-4 h-4 text-slate-400 transform transition-transform" id="icon-${uniqueId}"></i></button><div id="${uniqueId}" class="accordion-content bg-slate-900/30"><div class="p-4 border-t border-slate-700/50 space-y-3"><p class="text-right font-arabic text-2xl text-emerald-400 leading-loose">${dua.arabic}</p><div><p class="text-xs text-slate-500 uppercase">Pronunciation</p><p class="text-slate-300 italic text-sm">${dua.pronunciation}</p></div><div><p class="text-xs text-slate-500 uppercase">Meaning</p><p class="text-slate-200 text-sm">${dua.meaning}</p></div></div></div></div>`;
+                });
+                html += `</div></div>`;
+            });
+            container.innerHTML = html;
+            lucide.createIcons();
+        }
+        function toggleAccordion(id) { const content = document.getElementById(id); const icon = document.getElementById(`icon-${id}`); if (content.classList.contains('active')) { content.classList.remove('active'); icon.style.transform = 'rotate(0deg)'; } else { content.classList.add('active'); icon.style.transform = 'rotate(180deg)'; } }
+        function renderPlanner() { const container = document.getElementById('planner-container'); let html = ''; const startDate = new Date(2026, 1, 19); for (let i = 1; i <= 30; i++) { const plan = ramadanPlan.find(p => p.day === i) || { day: i, title: `Ramadan Day ${i}`, task: "Keep fasting and do Dhikr." }; const isToday = i === 1; const currentDate = new Date(startDate); currentDate.setDate(startDate.getDate() + (i - 1)); const dateString = currentDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }); html += `<div class="glass-panel p-4 rounded-xl flex items-start gap-4 ${isToday ? 'border-l-4 border-l-emerald-500 bg-emerald-900/10' : 'opacity-80'}"><div class="flex flex-col items-center justify-center gap-1"><div class="flex-shrink-0 w-10 h-10 rounded-full ${isToday ? 'bg-emerald-500 text-white' : 'bg-slate-800 text-slate-400'} flex items-center justify-center font-bold">${i}</div><span class="text-[10px] text-slate-500 font-mono">${dateString}</span></div><div><h4 class="font-bold text-white text-sm ${isToday ? 'text-emerald-300' : ''}">${plan.title}</h4><p class="text-xs text-slate-400 mt-1">${plan.task}</p></div></div>`; } container.innerHTML = html; }
+        function calculateZakat() { const cash = parseFloat(document.getElementById('zakat-cash').value) || 0; const zakat = (cash * 0.025).toFixed(2); document.getElementById('zakat-amount').innerText = zakat; document.getElementById('zakat-result').classList.remove('hidden'); }
+        function switchView(viewName) { ['dashboard', 'duas', 'planner', 'tools', 'alarm'].forEach(v => { const el = document.getElementById(`view-${v}`); if(el) el.classList.add('hidden'); }); const target = document.getElementById(`view-${viewName}`); if(target) target.classList.remove('hidden'); window.scrollTo(0,0); document.querySelectorAll('.nav-item').forEach(item => { item.classList.remove('active', 'text-yellow-400'); item.classList.add('text-slate-400'); if(item.getAttribute('onclick') && item.getAttribute('onclick').includes(viewName)) { item.classList.add('active', 'text-yellow-400'); item.classList.remove('text-slate-400'); } }); lucide.createIcons(); }
+        function renderChecklist() { const container = document.getElementById('checklist-container'); const savedData = JSON.parse(localStorage.getItem('ramadan_ibadah_2026') || '{}'); const todayKey = new Date().toDateString(); if (localStorage.getItem('last_date') !== todayKey) { localStorage.setItem('ramadan_ibadah_2026', '{}'); localStorage.setItem('last_date', todayKey); } let html = ''; checklistItems.forEach(item => { const isChecked = savedData[item.id] ? 'checked' : ''; html += `<label class="custom-checkbox flex items-center p-3 rounded-xl glass-panel cursor-pointer transition hover:bg-slate-800/50 group"><input type="checkbox" class="hidden" onchange="toggleCheck('${item.id}')" ${isChecked}><div class="w-6 h-6 rounded-lg border-2 border-slate-600 flex items-center justify-center mr-4 transition-colors group-hover:border-emerald-500"><i data-lucide="check" class="w-4 h-4 text-white opacity-0 transition-opacity input:checked:opacity-100"></i></div><div class="flex-1"><span class="text-slate-200 font-medium">${item.label}</span></div><i data-lucide="${item.icon}" class="w-5 h-5 text-slate-500"></i></label>`; }); container.innerHTML = html; lucide.createIcons(); const inputs = document.querySelectorAll('input[type="checkbox"]'); inputs.forEach(input => { if(input.checked) { input.nextElementSibling.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="text-white"><polyline points="20 6 9 17 4 12"></polyline></svg>`; input.nextElementSibling.classList.add('bg-emerald-600', 'border-emerald-600'); } }); }
+        function toggleCheck(id) { const savedData = JSON.parse(localStorage.getItem('ramadan_ibadah_2026') || '{}'); savedData[id] = !savedData[id]; localStorage.setItem('ramadan_ibadah_2026', JSON.stringify(savedData)); renderChecklist(); }
+        let count = 0; function loadTasbeeh() { count = parseInt(localStorage.getItem('tasbeeh_count') || '0'); document.getElementById('tasbeeh-count').innerText = count; } function incrementTasbeeh() { count++; document.getElementById('tasbeeh-count').innerText = count; localStorage.setItem('tasbeeh_count', count); if (navigator.vibrate) navigator.vibrate(50); } function resetTasbeeh() { if(confirm('Reset counter?')) { count = 0; document.getElementById('tasbeeh-count').innerText = count; localStorage.setItem('tasbeeh_count', count); } }
+    </script>
+</body>
+</html>
